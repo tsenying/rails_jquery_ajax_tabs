@@ -1,0 +1,64 @@
+How to implement horizontal tabs menu using JQuery UI tabs, fetching content through Ajax, from a Rails server.
+
+Steps:
+1. Create the Rails app, use the -d option to set the database adaptor.
+    rails -d postgresql rails_jquery_ajax_tabs
+
+2. Setup controller and views to be tabbed.
+    script/generate controller about tab1 tab2 tab3 tab4
+
+3. Download and add jquery.js, jquery-ui.js to the rails app directory public/javascripts and jquery-ui stylesheet to public/stylesheets,
+    from http://jqueryui.com/download
+
+4. Create layout with jquery javascript files and stylesheet.
+    - add jquery stylesheet to layout
+    <%= stylesheet_link_tag "jquery-ui-1.7.2.custom", :cache => true %>
+    - add jquery javascript files to layout (both core and ui) and also application.js
+    <%= javascript_include_tag "jquery-1.3.2.min", "jquery-ui-1.7.2.custom.min", "application" %>
+
+5. setup up tabs markup in layout,
+    match the link 'title' attribute and the content container's id, otherwise jquery dynamically creates the container.
+    Using links pointing to the server instead of named anchors inside the same document causes jquery ui tabs to ajaxify the tabs behavior.
+
+    <div id="tabs">
+      <ul>
+        <li><%= link_to content_tag(:span, "Tab1"), {:controller => "about", :action => "tab1"}, {:title => "main_content"} %></li>
+        <li><%= link_to content_tag(:span, "Tab2"), {:controller => "about", :action => "tab2"}, {:title => "main_content"} %></li>
+        <li><%= link_to content_tag(:span, "Tab3"), {:controller => "about", :action => "tab3"}, {:title => "main_content"} %></li>
+      </ul>
+    </div>
+    <div id="main_content">
+      <%= yield %>
+    </div>
+
+6. Create jquery tabs in application.js
+    $(document).ready(function(){
+        $("#tabs").tabs();
+    });
+
+7. create tab content views in views/about/ e.g. tab1.html.erb :
+<h1>About#tab1</h1>
+<p>Find me in app/views/about/tab1.html.erb</p>
+
+8. turn off layout in controller if request.xhr?
+
+  layout :determined_by_request
+ 
+  protected
+ 
+  def determined_by_request
+    if request.xhr?
+      return false
+    else
+      'application'
+    end
+  end
+
+7. set up routes in config/routes.rb:
+
+  map.root :controller => "about", :action => "tab1"
+
+References:
+http://docs.jquery.com/UI/Tabs
+http://jqueryui.com/demos/tabs/
+Similar implementation using prototype: http://www.eduvoyage.com/2008/9/26/ajax-tabs-and-rails and http://www.eduvoyage.com/2009/3/14/ajax-tabs-and-rails-2
